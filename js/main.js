@@ -414,7 +414,36 @@
   }
 
   /* ------------------------------------------------------------------
-   * 6. События
+   * 6. Данные из Google Таблицы (если настроен api.url)
+   * ------------------------------------------------------------------ */
+
+  function refreshMessengerButtons() {
+    var wa = cfg.messengers.whatsapp || {};
+    var tg = cfg.messengers.telegram || {};
+    var mx = cfg.messengers.max || {};
+    $('#send-whatsapp').hidden = !(wa.enabled && String(wa.phone || '').replace(/\D/g, ''));
+    $('#send-telegram').hidden = !(tg.enabled !== false);
+    $('#send-max').hidden = !(mx.enabled && mx.linkTemplate);
+  }
+
+  function loadFromSheet() {
+    var url = (cfg.api && cfg.api.url || '').trim();
+    if (!url) return;
+    BusinessStorage.loadRemote(url)
+      .then(function (model) {
+        cfg = BusinessStorage.applySheetModel(cfg, model);
+        BusinessStorage.save(cfg); // кэш, чтобы сайт работал без сети
+        renderStatic();
+        renderServices();
+        refreshMessengerButtons();
+      })
+      .catch(function () {
+        // Таблица недоступна — работаем на кэше из localStorage.
+      });
+  }
+
+  /* ------------------------------------------------------------------
+   * 7. События
    * ------------------------------------------------------------------ */
 
   function wireEvents() {
@@ -473,12 +502,7 @@
     });
 
     // Видимость кнопок мессенджеров по конфигурации
-    var wa = cfg.messengers.whatsapp || {};
-    var tg = cfg.messengers.telegram || {};
-    var mx = cfg.messengers.max || {};
-    $('#send-whatsapp').hidden = !(wa.enabled && String(wa.phone || '').replace(/\D/g, ''));
-    $('#send-telegram').hidden = !(tg.enabled !== false);
-    $('#send-max').hidden = !(mx.enabled && mx.linkTemplate);
+    refreshMessengerButtons();
 
     // Мобильное меню
     var burger = $('.burger');
@@ -496,7 +520,7 @@
   }
 
   /* ------------------------------------------------------------------
-   * 7. Старт
+   * 8. Старт
    * ------------------------------------------------------------------ */
 
   function init() {
@@ -506,6 +530,7 @@
     renderServices();
     wireEvents();
     runHeroAnimation();
+    loadFromSheet();
   }
 
   if (document.readyState === 'loading') {

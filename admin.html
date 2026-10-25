@@ -9,6 +9,22 @@
 </head>
 <body class="admin-body">
 
+  <!-- ======================= Экран входа (пароль) ======================= -->
+  <div class="admin-lock" id="admin-lock">
+    <form class="admin-lock__card" id="lock-form" novalidate>
+      <span class="admin-lock__icon" aria-hidden="true">🔒</span>
+      <h1>Вход в админ-панель</h1>
+      <p class="admin-lock__hint">
+        Введите пароль. Пароль по умолчанию — из файла <code>js/config.js</code>
+        (поле <code>auth.defaultPassword</code>), сменить его можно в настройках.
+      </p>
+      <input type="password" id="lock-password" placeholder="Пароль"
+             autocomplete="current-password" autofocus />
+      <p class="error-msg" id="lock-error" role="alert"></p>
+      <button class="btn btn--primary btn--block" type="submit">Войти</button>
+    </form>
+  </div>
+
   <!-- ======================= Верхняя панель ======================= -->
   <header class="admin-topbar">
     <div class="admin-topbar__inner">
@@ -20,8 +36,8 @@
         </span>
       </div>
       <div class="admin-topbar__actions">
-        <button class="btn btn--ghost" type="button" id="btn-import">Импорт JSON</button>
-        <button class="btn btn--ghost" type="button" id="btn-export">Экспорт JSON</button>
+        <button class="btn btn--ghost" type="button" id="btn-load-sheet">Загрузить из таблицы</button>
+        <button class="btn btn--ghost" type="button" id="btn-save-sheet">Сохранить в таблицу</button>
         <button class="btn btn--ghost" type="button" id="btn-reset">Сбросить</button>
         <button class="btn btn--primary" type="button" id="btn-save">Сохранить</button>
         <a class="btn btn--primary" href="index.html">Открыть витрину →</a>
@@ -33,11 +49,12 @@
     <div class="admin-banner" role="note">
       <span class="icon" aria-hidden="true">⚠️</span>
       <span>
-        Это локальный редактор конфигурации, а не защищённая публичная админка.
-        Изменения хранятся в localStorage <b>этого браузера</b> и после «Сохранить»
-        сразу видны на витрине. Чтобы опубликовать данные для всех посетителей,
-        экспортируйте JSON и подключите постоянное хранилище (например,
-        Google Apps Script как API — поле <code>api.url</code> в конфигурации).
+        «Сохранить» записывает данные в localStorage <b>этого браузера</b> — витрина
+        сразу их увидит. «Сохранить в таблицу» / «Загрузить из таблицы» работают с
+        Google Таблицей через Apps Script — укажите URL веб-приложения в поле
+        <code>api.url</code> (раздел «Форма записи и сообщение» ниже, скрипт —
+        <code>apps-script/Code.gs</code>). Пароль — лишь минимальный порог, а не
+        настоящая защита.
       </span>
     </div>
   </div>
@@ -141,8 +158,27 @@
                 <input type="text" id="set-greeting" data-setting="booking.message.greeting" />
               </div>
               <div class="field">
-                <label for="set-api">API (Google Apps Script) — для будущего backend</label>
-                <input type="text" id="set-api" data-setting="api.url" placeholder="https://script.google.com/macros/s/…" />
+                <label for="set-api">API — URL веб-приложения Google Apps Script</label>
+                <input type="text" id="set-api" data-setting="api.url"
+                       placeholder="https://script.google.com/macros/s/…/exec" />
+                <span class="desc">Скрипт: apps-script/Code.gs. Пока URL пуст — админка работает
+                  локально (localStorage).</span>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="fieldset">
+            <legend>Доступ</legend>
+            <div class="settings-grid">
+              <div class="field">
+                <label for="set-new-pass">Новый пароль админки</label>
+                <input type="password" id="set-new-pass" autocomplete="new-password"
+                       placeholder="Минимум 4 символа" />
+                <span class="desc">Хранится в localStorage этого браузера в виде SHA-256.
+                  Это минимальный порог, а не настоящая защита.</span>
+              </div>
+              <div class="field" style="align-self:end">
+                <button class="btn btn--ghost" type="button" id="btn-change-pass">Сменить пароль</button>
               </div>
             </div>
           </fieldset>
@@ -234,8 +270,6 @@
       </div>
     </div>
   </div>
-
-  <input type="file" id="import-file" accept=".json,application/json" hidden />
 
   <script src="js/config.js"></script>
   <script src="js/common.js"></script>

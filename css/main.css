@@ -482,13 +482,13 @@ p {
 }
 
 .hero__float--hours {
-  left: -26px;
-  bottom: 34px;
+  left: -18px;
+  bottom: -26px;
 }
 
 .hero__float--rating {
   right: -16px;
-  top: 44px;
+  top: -26px;
 }
 
 .hero__float .icon {

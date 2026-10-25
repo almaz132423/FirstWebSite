@@ -3,11 +3,9 @@
 Данные взяты из листа `gid=384647661` таблицы:
 https://docs.google.com/spreadsheets/d/11X-a1AUTlxjV5ZgwIR5PXFiyhsXRgELHqZUlDaSzQc4
 
-## Структура листа (реконструкция)
+## Структура листа
 
 Колонки (первая строка): `type | key | value | id | name | description | price | duration | image | imageAlt`
-
-Строки:
 
 | type | key | value | id | name | description | price | duration | image | imageAlt |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -18,23 +16,20 @@ https://docs.google.com/spreadsheets/d/11X-a1AUTlxjV5ZgwIR5PXFiyhsXRgELHqZUlDaSz
 | settings | messengers.telegram.url | https://t.me/example | — | — | — | — | — | — | — |
 | service | — | — | service-f54572a4-… | УСЛУГА 1 | 23 | 1222 | 23 | — | 23 |
 
-> Замечания по данным:
-> 1. Первые две строки содержат и настройку, и пример услуги одновременно —
->    видимо, так заполнялся пример. В конфигурации сайта настройки и услуги
->    разделены по своим массивам.
-> 2. В строках услуг значения выглядят сдвинутыми относительно заголовков
->    («Описание услуги» попало в price, «Уточняйте стоимость» — в duration,
->    «1 час» — в image). В оболочке поля услуг называются по заголовкам
->    листа: id, name, description, price, duration, image, imageAlt.
-> 3. Строка «УСЛУГА 1» содержит тестовые числа (23 / 1222 / 23) — вероятно,
->    случайные данные, в конфигурацию по умолчанию не включена.
+> Замечания по текущим данным:
+> 1. Первые две строки содержат и настройку, и пример услуги одновременно,
+>    а значения услуг выглядят сдвинутыми относительно заголовков. После
+>    первого «Сохранить в таблицу» из админки лист перепишется в чистом
+>    виде: отдельные строки настроек и услуг — сделайте копию таблицы заранее.
+> 2. Строка «УСЛУГА 1» содержит тестовые числа (23 / 1222 / 23) и будет
+>    утеряна при перезаписи — она не используется сайтом.
 
-## Маппинг «таблица → конфиг» (js/config.js)
+## Маппинг «таблица → конфиг» (js/config.js, js/storage.js)
 
 | Google Таблица | Конфигурация сайта |
 |---|---|
 | settings: business.name | `business.name` |
-| settings: contacts.phone | `contacts.phone` (+ `contacts.phoneDisplay`) |
+| settings: contacts.phone | `contacts.phone` |
 | settings: contacts.address | `contacts.address` |
 | settings: contacts.hours | `contacts.hours` |
 | settings: messengers.telegram.url | `messengers.telegram.chatUrl` |
@@ -45,19 +40,20 @@ https://docs.google.com/spreadsheets/d/11X-a1AUTlxjV5ZgwIR5PXFiyhsXRgELHqZUlDaSz
 | service: duration | `services[].duration` |
 | service: image | `services[].image` |
 | service: imageAlt | `services[].imageAlt` |
-| (не в таблице) | `messengers.whatsapp.phone`, `messengers.max.*`, `booking.fields`, `design.colors`, `seo.*` |
+| (не в таблице) | `business.tagline`, `messengers.whatsapp.*`, `messengers.max.*`, `booking.*`, `design.*`, `seo.*` — живут локально |
 
-## Связь с Google Apps Script (план на будущее)
+Синхронизируются только настройки из списка выше и массив услуг.
+Остальные поля конфигурации остаются локальными.
 
-Сейчас админка работает локально (localStorage). Чтобы связать её с таблицей
-через существующий Apps Script:
+## Apps Script (apps-script/Code.gs)
 
-1. Опубликуйте Apps Script как Web App («Развёртывание → Управление
-   развёртываниями → Новое развёртывание → Веб-приложение»).
-2. Пропишите URL веб-приложения в поле `api.url` (админка → Настройки → API).
-3. Добавьте в `storage.js` функции `loadRemote()` / `saveRemote()` с `fetch`
-   к этому URL и переключение режима `local` ↔ `api`.
+Скрипт публикуется как веб-приложение («Развёртывание → Новое развёртывание →
+Веб-приложение», доступ: «Все»), URL `/exec` вставляется в админку в поле
+`api.url`. Протокол:
 
-Тогда настройки и услуги будут читаться/писаться прямо из листа, и данные
-станут общими для всех посетителей. Для публичного редактирования обязательно
-нужна авторизация на стороне Apps Script.
+- `GET ?action=read` → `{ settings: [{key, value}], services: [...] }`
+- `POST {"action":"write","settings":[...],"services":[...]}` → `{ ok, written }`
+
+Сайт (витрина и админка) обращается к этому URL через `fetch`
+(`js/storage.js`: `loadRemote` / `saveRemote`). При записи строки данных
+листа перезаписываются: настройки → `type=settings`, услуги → `type=service`.

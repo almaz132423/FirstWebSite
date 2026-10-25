@@ -1,10 +1,13 @@
 /* =====================================================================
- * admin.js — логика локальной админ-панели (admin.html).
+ * admin.js — логика админ-панели (admin.html).
  *
- * Редактирует ту же конфигурацию, что и витрина:
- *   - настройки компании (settings в Google Таблице);
- *   - услуги: id, name, description, price, duration, image, imageAlt.
- * Сохранение — в localStorage, экспорт/импорт — JSON-файл.
+ * Что умеет:
+ *   - вход по паролю (минимальный порог, пароль хранится в localStorage);
+ *   - редактирование настроек компании (settings Google Таблицы);
+ *   - CRUD услуг: id, name, description, price, duration, image, imageAlt;
+ *   - сохранение в localStorage (витрина читает тот же ключ);
+ *   - загрузка/сохранение данных в Google Таблице через Apps Script,
+ *     если в настройках задан api.url.
  * ===================================================================== */
 
 (function () {
@@ -15,6 +18,9 @@
   var escapeHtml = AppUI.escapeHtml;
   var toast = AppUI.toast;
   var newId = AppUI.newId;
+
+  var LOCK_KEY = 'business-site:admin-pass';
+  var SESSION_KEY = 'business-site:admin-authed';
 
   var cfg = BusinessStorage.load();
   var dirty = false;
@@ -40,7 +46,75 @@
   }
 
   /* ------------------------------------------------------------------
-   * 2. Настройки
+   * 2. Вход по паролю (минимальный порог, не настоящая защита)
+   * ------------------------------------------------------------------ */
+
+  async function sha256Hex(text) {
+    try {
+      var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+      return Array.from(new Uint8Array(buf))
+        .map(function (b) { return b.toString(16).padStart(2, '0'); })
+        .join('');
+    } catch (err) {
+      return null; // среда без crypto.subtle — сравниваем открытый текст
+    }
+  }
+
+  async function expectedPasswordHash() {
+    var stored = localStorage.getItem(LOCK_KEY);
+    if (stored) return stored;
+    var def = (cfg.auth && cfg.auth.defaultPassword) || 'admin123';
+    return (await sha256Hex(def)) || 'plain:' + def;
+  }
+
+  async function checkPassword(input) {
+    var inputHash = (await sha256Hex(input)) || 'plain:' + input;
+    return inputHash === (await expectedPasswordHash());
+  }
+
+  function wireLockScreen() {
+    var lock = $('#admin-lock');
+    if (!lock) return;
+
+    // Повторный вход в этой вкладке не запрашиваем до закрытия вкладки
+    if (sessionStorage.getItem(SESSION_KEY) === '1') {
+      lock.hidden = true;
+      return;
+    }
+
+    $('#lock-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var input = $('#lock-password');
+      var ok = await checkPassword(input.value);
+      if (ok) {
+        sessionStorage.setItem(SESSION_KEY, '1');
+        lock.hidden = true;
+        toast('Вход выполнен');
+      } else {
+        $('#lock-error').textContent = 'Неверный пароль';
+        input.value = '';
+        input.focus();
+      }
+    });
+  }
+
+  function wirePasswordChange() {
+    $('#btn-change-pass').addEventListener('click', async function () {
+      var input = $('#set-new-pass');
+      var value = input.value;
+      if (!value || value.length < 4) {
+        toast('Пароль должен содержать минимум 4 символа', 'error');
+        input.focus();
+        return;
+      }
+      localStorage.setItem(LOCK_KEY, (await sha256Hex(value)) || 'plain:' + value);
+      input.value = '';
+      toast('Пароль изменён и сохранён в этом браузере');
+    });
+  }
+
+  /* ------------------------------------------------------------------
+   * 3. Настройки
    * ------------------------------------------------------------------ */
 
   function renderSettings() {
@@ -82,7 +156,7 @@
   }
 
   /* ------------------------------------------------------------------
-   * 3. Услуги
+   * 4. Услуги
    * ------------------------------------------------------------------ */
 
   function renderServices() {
@@ -149,7 +223,7 @@
     $('#svc-duration').value = s.duration || '';
     $('#svc-image').value = s.image || '';
     $('#svc-image-alt').value = s.imageAlt || '';
-    $('[data-field-wrap], #service-form .field').forEach(function (f) {
+    $$('#service-form .field').forEach(function (f) {
       f.classList.remove('is-invalid');
     });
 
@@ -199,7 +273,7 @@
   }
 
   /* ------------------------------------------------------------------
-   * 4. Сохранение, экспорт, импорт, сброс
+   * 5. Сохранение и работа с Google Таблицей
    * ------------------------------------------------------------------ */
 
   function markDirty() {
@@ -217,32 +291,45 @@
     toast('Конфигурация сохранена в localStorage');
   }
 
-  function doExport() {
-    var name = String((cfg.business && cfg.business.name) || 'business')
-      .replace(/[^\wа-яё-]+/gi, '-')
-      .toLowerCase();
-    BusinessStorage.exportJson(cfg, name + '-config.json');
-    toast('Файл JSON выгружен');
+  function apiUrl() {
+    return (cfg.api && cfg.api.url || '').trim();
   }
 
-  function doImport(file) {
-    var reader = new FileReader();
-    reader.onload = function () {
-      try {
-        var imported = BusinessStorage.importJson(String(reader.result));
-        cfg = imported;
-        renderSettings();
-        renderServices();
-        markDirty();
-        toast('Конфигурация импортирована — проверьте данные и нажмите «Сохранить»');
-      } catch (err) {
-        toast(err.message || 'Не удалось импортировать файл', 'error');
-      }
-    };
-    reader.onerror = function () {
-      toast('Не удалось прочитать файл', 'error');
-    };
-    reader.readAsText(file);
+  function requireApiUrl() {
+    if (apiUrl()) return true;
+    toast('Сначала укажите URL Apps Script в настройках (поле «API»)', 'error');
+    return false;
+  }
+
+  async function doLoadFromSheet() {
+    var btn = $('#btn-load-sheet');
+    if (!requireApiUrl()) return;
+    btn.disabled = true;
+    try {
+      var model = await BusinessStorage.loadRemote(apiUrl());
+      cfg = BusinessStorage.applySheetModel(cfg, model);
+      renderSettings();
+      renderServices();
+      markDirty();
+      toast('Данные загружены из Google Таблицы — нажмите «Сохранить»');
+    } catch (err) {
+      toast('Не удалось загрузить из таблицы: ' + err.message, 'error');
+    }
+    btn.disabled = false;
+  }
+
+  async function doSaveToSheet() {
+    var btn = $('#btn-save-sheet');
+    if (!requireApiUrl()) return;
+    btn.disabled = true;
+    try {
+      var result = await BusinessStorage.saveRemote(apiUrl(), BusinessStorage.toSheetModel(cfg));
+      var written = (result && result.written) || 0;
+      toast('Записано в Google Таблицу: ' + written + ' строк');
+    } catch (err) {
+      toast('Не удалось сохранить в таблицу: ' + err.message, 'error');
+    }
+    btn.disabled = false;
   }
 
   function doReset() {
@@ -257,22 +344,14 @@
   }
 
   /* ------------------------------------------------------------------
-   * 5. События и старт
+   * 6. События и старт
    * ------------------------------------------------------------------ */
 
   function wireEvents() {
     $('#btn-save').addEventListener('click', doSave);
-    $('#btn-export').addEventListener('click', doExport);
     $('#btn-reset').addEventListener('click', doReset);
-
-    $('#btn-import').addEventListener('click', function () {
-      $('#import-file').click();
-    });
-    $('#import-file').addEventListener('change', function (e) {
-      var file = e.target.files && e.target.files[0];
-      if (file) doImport(file);
-      e.target.value = '';
-    });
+    $('#btn-load-sheet').addEventListener('click', doLoadFromSheet);
+    $('#btn-save-sheet').addEventListener('click', doSaveToSheet);
 
     $('#btn-add-service').addEventListener('click', function () {
       openServiceModal(null);
@@ -301,6 +380,8 @@
   }
 
   function init() {
+    wireLockScreen();
+    wirePasswordChange();
     renderSettings();
     renderServices();
     bindSettings();

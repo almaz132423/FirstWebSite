@@ -283,6 +283,72 @@ table.services tbody tr:hover {
   font-size: var(--text-sm);
 }
 
+/* ---------- Экран входа (пароль) ---------- */
+
+.admin-lock {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: var(--c-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.admin-lock__card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 34px 30px;
+  width: 100%;
+  max-width: 400px;
+  display: grid;
+  gap: 14px;
+  text-align: center;
+}
+
+.admin-lock__icon {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+.admin-lock__card h1 {
+  font-size: var(--text-lg);
+  margin: 0;
+}
+
+.admin-lock__hint {
+  color: var(--c-muted);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.admin-lock__card input {
+  width: 100%;
+  font: inherit;
+  font-size: var(--text-md);
+  text-align: center;
+  letter-spacing: 0.14em;
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+}
+
+.admin-lock__card input:focus {
+  outline: none;
+  border-color: var(--c-primary);
+  box-shadow: 0 0 0 3px var(--c-primary-soft);
+}
+
+.admin-lock .error-msg {
+  color: var(--c-danger);
+  font-size: var(--text-xs);
+  min-height: 1.1em;
+  margin: 0;
+}
+
 /* ---------- Модальное окно услуги ---------- */
 
 .modal--form {
