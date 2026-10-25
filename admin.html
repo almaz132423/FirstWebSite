@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Админ-панель — локальный редактор конфигурации</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body class="admin-body">
+
+  <!-- ======================= Верхняя панель ======================= -->
+  <header class="admin-topbar">
+    <div class="admin-topbar__inner">
+      <div class="admin-topbar__title">
+        <span class="dot" aria-hidden="true"></span>
+        <span>
+          Админ-панель
+          <small id="admin-subtitle">локальный редактор конфигурации</small>
+        </span>
+      </div>
+      <div class="admin-topbar__actions">
+        <button class="btn btn--ghost" type="button" id="btn-import">Импорт JSON</button>
+        <button class="btn btn--ghost" type="button" id="btn-export">Экспорт JSON</button>
+        <button class="btn btn--ghost" type="button" id="btn-reset">Сбросить</button>
+        <button class="btn btn--primary" type="button" id="btn-save">Сохранить</button>
+        <a class="btn btn--primary" href="index.html">Открыть витрину →</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="admin-banner" role="note">
+      <span class="icon" aria-hidden="true">⚠️</span>
+      <span>
+        Это локальный редактор конфигурации, а не защищённая публичная админка.
+        Изменения хранятся в localStorage <b>этого браузера</b> и после «Сохранить»
+        сразу видны на витрине. Чтобы опубликовать данные для всех посетителей,
+        экспортируйте JSON и подключите постоянное хранилище (например,
+        Google Apps Script как API — поле <code>api.url</code> в конфигурации).
+      </span>
+    </div>
+  </div>
+
+  <main class="admin-main">
+
+    <!-- ======================= Настройки ======================= -->
+    <section class="panel" id="panel-settings">
+      <div class="panel__head">
+        <h2>Настройки компании</h2>
+        <span class="hint">Соответствуют строкам type=«settings» в Google Таблице</span>
+      </div>
+      <div class="panel__body">
+        <div class="settings-grid">
+          <div class="field">
+            <label for="set-name">Название компании</label>
+            <input type="text" id="set-name" data-setting="business.name" />
+            <span class="desc">Ключ в таблице: business.name</span>
+          </div>
+
+          <div class="field">
+            <label for="set-tagline">Короткое описание (hero)</label>
+            <input type="text" id="set-tagline" data-setting="business.tagline" />
+          </div>
+
+          <div class="field">
+            <label for="set-description">Описание компании</label>
+            <textarea id="set-description" data-setting="business.description"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="set-features">Преимущества (по одному на строку)</label>
+            <textarea id="set-features" data-setting="business.features.list"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="set-phone">Телефон (формат +70000000000)</label>
+            <input type="text" id="set-phone" data-setting="contacts.phone" />
+            <span class="desc">Ключ в таблице: contacts.phone</span>
+          </div>
+
+          <div class="field">
+            <label for="set-phone-display">Телефон (как показывать)</label>
+            <input type="text" id="set-phone-display" data-setting="contacts.phoneDisplay" />
+          </div>
+
+          <div class="field">
+            <label for="set-address">Адрес</label>
+            <input type="text" id="set-address" data-setting="contacts.address" />
+            <span class="desc">Ключ в таблице: contacts.address</span>
+          </div>
+
+          <div class="field">
+            <label for="set-hours">Часы работы</label>
+            <input type="text" id="set-hours" data-setting="contacts.hours" />
+            <span class="desc">Ключ в таблице: contacts.hours</span>
+          </div>
+
+          <div class="field">
+            <label for="set-map">Ссылка на маршрут (необязательно)</label>
+            <input type="text" id="set-map" data-setting="contacts.mapUrl" />
+          </div>
+
+          <fieldset class="fieldset">
+            <legend>Мессенджеры</legend>
+            <div class="settings-grid">
+              <div class="field">
+                <label class="field--check">
+                  <input type="checkbox" id="set-wa-enabled" data-setting="messengers.whatsapp.enabled" />
+                  WhatsApp включён
+                </label>
+                <input type="text" id="set-wa-phone" data-setting="messengers.whatsapp.phone"
+                       placeholder="70000000000" aria-label="Телефон WhatsApp (только цифры)" />
+                <span class="desc">Только цифры, без «+»</span>
+              </div>
+
+              <div class="field">
+                <label for="set-tg-chat">Telegram — чат/канал компании</label>
+                <input type="text" id="set-tg-chat" data-setting="messengers.telegram.chatUrl" />
+                <span class="desc">Ключ в таблице: messengers.telegram.url. Текст заявки передаётся
+                  через официальный механизм t.me/share/url.</span>
+              </div>
+
+              <div class="field">
+                <label class="field--check">
+                  <input type="checkbox" id="set-max-enabled" data-setting="messengers.max.enabled" />
+                  MAX включён
+                </label>
+                <input type="text" id="set-max-template" data-setting="messengers.max.linkTemplate"
+                       placeholder="Официальная ссылка MAX с {text}" aria-label="Шаблон ссылки MAX" />
+                <span class="desc">Только официальный механизм. Плейсхолдер {text} заменится сообщением.</span>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="fieldset">
+            <legend>Форма записи и сообщение</legend>
+            <div class="settings-grid">
+              <div class="field">
+                <label for="set-greeting">Приветствие в сообщении</label>
+                <input type="text" id="set-greeting" data-setting="booking.message.greeting" />
+              </div>
+              <div class="field">
+                <label for="set-api">API (Google Apps Script) — для будущего backend</label>
+                <input type="text" id="set-api" data-setting="api.url" placeholder="https://script.google.com/macros/s/…" />
+              </div>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= Услуги ======================= -->
+    <section class="panel" id="panel-services">
+      <div class="panel__head">
+        <h2>Услуги</h2>
+        <button class="btn btn--primary btn--sm" type="button" id="btn-add-service">+ Добавить услугу</button>
+      </div>
+      <div class="panel__body">
+        <p class="hint" style="color:var(--c-muted);font-size:var(--text-sm);margin:0 0 16px">
+          Соответствуют строкам type=«service» в Google Таблице: id, name, description,
+          price, duration, image, imageAlt.
+        </p>
+        <div class="table-wrap">
+          <table class="services">
+            <thead>
+              <tr>
+                <th>Услуга</th>
+                <th>Описание</th>
+                <th>Цена</th>
+                <th>Длительность</th>
+                <th>Фото</th>
+                <th style="text-align:right">Действия</th>
+              </tr>
+            </thead>
+            <tbody id="services-tbody"></tbody>
+          </table>
+          <div class="empty-state" id="services-empty" hidden>
+            Услуг пока нет. Нажмите «Добавить услугу».
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ======================= Модальное окно услуги ======================= -->
+  <div class="modal-overlay" id="service-overlay" hidden>
+    <div class="modal modal--form" role="dialog" aria-modal="true" aria-labelledby="service-modal-title">
+      <div class="modal__head">
+        <h2 id="service-modal-title">Услуга</h2>
+        <button class="close" type="button" data-close aria-label="Закрыть окно">✕</button>
+      </div>
+      <div class="modal__body">
+        <form id="service-form" novalidate>
+          <input type="hidden" id="svc-id" />
+
+          <div class="field">
+            <label for="svc-name">Название <span class="req" aria-hidden="true">*</span></label>
+            <input type="text" id="svc-name" data-svc="name" />
+            <p class="error-msg"></p>
+          </div>
+
+          <div class="field">
+            <label for="svc-desc">Описание</label>
+            <textarea id="svc-desc" data-svc="description"></textarea>
+          </div>
+
+          <div class="settings-grid" style="grid-template-columns:1fr 1fr">
+            <div class="field">
+              <label for="svc-price">Цена</label>
+              <input type="text" id="svc-price" data-svc="price" placeholder="Уточняйте стоимость / от 3000 ₽" />
+            </div>
+            <div class="field">
+              <label for="svc-duration">Длительность</label>
+              <input type="text" id="svc-duration" data-svc="duration" placeholder="1 час" />
+            </div>
+          </div>
+
+          <div class="settings-grid" style="grid-template-columns:1fr 1fr">
+            <div class="field">
+              <label for="svc-image">URL изображения</label>
+              <input type="text" id="svc-image" data-svc="image" placeholder="images/service.jpg" />
+            </div>
+            <div class="field">
+              <label for="svc-image-alt">Alt-текст изображения</label>
+              <input type="text" id="svc-image-alt" data-svc="imageAlt" />
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal__foot">
+        <button class="btn btn--ghost" type="button" data-close>Отмена</button>
+        <button class="btn btn--primary" type="button" id="svc-save">Сохранить услугу</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="import-file" accept=".json,application/json" hidden />
+
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

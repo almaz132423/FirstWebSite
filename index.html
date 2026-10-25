@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-seo="title">Название компании — услуги и запись</title>
+  <meta name="description" data-seo="description" content="Описание компании и услуг. Запишитесь через удобный мессенджер." />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" data-seo="title" content="Название компании — услуги и запись" />
+  <meta property="og:description" data-seo="description" content="Описание компании и услуг." />
+  <meta property="og:locale" content="ru_RU" />
+
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+
+  <!-- ======================= Шапка ======================= -->
+  <header class="header">
+    <div class="container header__inner">
+      <a class="logo" href="#top">
+        <span class="logo__mark" aria-hidden="true">★</span>
+        <span id="brand-name">Название компании</span>
+      </a>
+
+      <nav class="nav" id="site-nav" aria-label="Основная навигация">
+        <a href="#services">Услуги</a>
+        <a href="#about">О компании</a>
+        <a href="#contacts">Контакты</a>
+      </nav>
+
+      <a class="header__phone" id="header-phone" href="tel:+70000000000">+7 000 000-00-00</a>
+
+      <button class="btn btn--primary btn--sm header__cta" type="button" data-booking>
+        Записаться
+      </button>
+
+      <button class="burger" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="site-nav">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- ======================= Hero ======================= -->
+    <section class="hero">
+      <div class="container hero__grid">
+        <div class="hero__content">
+          <span class="hero__badge"><span class="dot" aria-hidden="true"></span><span id="hero-badge">Работаем ежедневно</span></span>
+          <h1 class="hero__title">Качественные услуги<br />для вас — <span class="accent" id="hero-accent">быстро и надёжно</span></h1>
+          <p class="hero__text" id="hero-text">Короткое описание бизнеса: чем вы занимаетесь и чем полезны клиентам.</p>
+
+          <div class="hero__actions">
+            <button class="btn btn--primary" type="button" data-booking>Записаться онлайн</button>
+            <a class="btn btn--ghost" href="#services">Смотреть услуги</a>
+          </div>
+
+          <div class="hero__trust">
+            <span class="item" id="trust-hours">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+              Ежедневно 09:00–18:00
+            </span>
+            <span class="item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 3v6h-6"/></svg>
+              Заявка через мессенджер за минуту
+            </span>
+          </div>
+        </div>
+
+        <div class="hero__visual">
+          <div class="hero__card">
+            <div class="figure">
+              <div class="big" id="hero-card-title">Запись<br />онлайн</div>
+              <div class="small">Выберите услугу — мы подготовим сообщение, останется только отправить.</div>
+            </div>
+          </div>
+          <div class="hero__float hero__float--hours">
+            <span class="icon" aria-hidden="true">⏰</span>
+            <span><span class="label">Режим работы</span><br /><span class="value" id="hero-hours">Ежедневно 09:00–18:00</span></span>
+          </div>
+          <div class="hero__float hero__float--rating">
+            <span class="icon" aria-hidden="true">✉️</span>
+            <span><span class="label">Связь</span><br /><span class="value">WhatsApp · Telegram</span></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= Услуги ======================= -->
+    <section class="section section--tinted" id="services">
+      <div class="container">
+        <div class="section-head">
+          <span class="kicker">Услуги</span>
+          <h2>Что мы предлагаем</h2>
+          <p>Выберите подходящую услугу и отправьте заявку — мы свяжемся с вами и подтвердим запись.</p>
+        </div>
+        <div class="services-grid" id="services-grid">
+          <!-- Карточки услуг рендерит js/main.js из конфигурации -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= О компании ======================= -->
+    <section class="section" id="about">
+      <div class="container about-grid">
+        <div class="about-media" id="about-media" role="img" aria-label="Фотография компании">
+          Здесь будет реальная фотография компании
+        </div>
+        <div class="about-content">
+          <div class="section-head" style="margin-bottom: 26px">
+            <span class="kicker">О компании</span>
+            <h2>Почему выбирают нас</h2>
+            <p id="about-text">Несколько предложений о компании. Замените этот текст на реальную информацию о вашем бизнесе.</p>
+          </div>
+          <ul class="feature-list" id="about-features">
+            <!-- Преимущества рендерит js/main.js -->
+          </ul>
+          <button class="btn btn--primary" type="button" data-booking>Записаться</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= Контакты ======================= -->
+    <section class="section section--tinted" id="contacts">
+      <div class="container">
+        <div class="section-head">
+          <span class="kicker">Контакты</span>
+          <h2>Как нас найти</h2>
+          <p>Позвоните, напишите в мессенджер или оставьте заявку — отвечаем в рабочее время.</p>
+        </div>
+
+        <div class="contacts-grid">
+          <div class="contact-card">
+            <span class="icon" aria-hidden="true">📍</span>
+            <h3>Адрес</h3>
+            <p id="contact-address">Адрес компании</p>
+          </div>
+          <div class="contact-card">
+            <span class="icon" aria-hidden="true">📞</span>
+            <h3>Телефон</h3>
+            <p><a id="contact-phone" href="tel:+70000000000">+7 000 000-00-00</a></p>
+          </div>
+          <div class="contact-card">
+            <span class="icon" aria-hidden="true">🕘</span>
+            <h3>Часы работы</h3>
+            <p id="contact-hours">Ежедневно 09:00–18:00</p>
+          </div>
+          <div class="contact-card">
+            <span class="icon" aria-hidden="true">💬</span>
+            <h3>Мессенджеры</h3>
+            <p>Принимаем заявки в WhatsApp и Telegram — выберите удобный способ в форме записи.</p>
+          </div>
+        </div>
+
+        <div class="messenger-row">
+          <button class="btn btn--primary" type="button" data-booking>Оставить заявку</button>
+          <a class="btn btn--ghost" id="contact-map" href="#" hidden>Открыть маршрут</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ======================= Футер ======================= -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__grid">
+        <div>
+          <h4 id="footer-brand">Название компании</h4>
+          <ul>
+            <li id="footer-phone">+7 000 000-00-00</li>
+            <li id="footer-address">Адрес компании</li>
+            <li id="footer-hours">Ежедневно 09:00–18:00</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Навигация</h4>
+          <ul>
+            <li><a href="#services">Услуги</a></li>
+            <li><a href="#about">О компании</a></li>
+            <li><a href="#contacts">Контакты</a></li>
+            <li><a href="admin.html">Админ-панель</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Информация</h4>
+          <ul>
+            <li>Запись считается подтверждённой после ответа компании.</li>
+            <li>Персональные данные обрабатываются только для связи с вами.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <span id="footer-copy">© 2026 Название компании</span>
+        <span>Сайт работает без регистрации и лишних данных</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ======================= Модальное окно записи ======================= -->
+  <div class="modal-overlay" id="booking-overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="booking-title">
+      <div class="modal__head">
+        <h2 id="booking-title">Оставить заявку</h2>
+        <button class="close" type="button" data-close aria-label="Закрыть окно">✕</button>
+      </div>
+      <div class="modal__body">
+        <p class="modal__intro" id="booking-intro"></p>
+
+        <form id="booking-form" novalidate>
+          <div id="booking-fields"><!-- Поля строятся из конфигурации --></div>
+
+          <div class="preview">
+            <div class="preview__label">Предпросмотр сообщения</div>
+            <div class="preview__text" id="booking-preview"></div>
+          </div>
+
+          <div class="send-row" id="send-row">
+            <button class="btn btn--whatsapp" type="button" id="send-whatsapp" hidden>WhatsApp</button>
+            <button class="btn btn--telegram" type="button" id="send-telegram" hidden>Telegram</button>
+            <button class="btn btn--max" type="button" id="send-max" hidden>MAX</button>
+            <button class="btn btn--ghost" type="button" id="send-copy">Скопировать текст</button>
+          </div>
+        </form>
+
+        <p class="modal__note" id="booking-note" hidden>
+          Сообщение откроется в выбранном мессенджере — отправьте его сами.
+          Заявка не считается подтверждённой, пока компания не ответит.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <noscript>
+    <p style="text-align:center;padding:20px">
+      Для отправки заявки включите JavaScript. Вы также можете связаться с нами по телефону:
+      <a href="tel:+70000000000">+7 000 000-00-00</a>.
+    </p>
+  </noscript>
+
+  <!-- Anime.js — используется для анимаций, при отсутствии сети сайт работает без них -->
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js" defer></script>
+  <script src="js/config.js" defer></script>
+  <script src="js/common.js" defer></script>
+  <script src="js/storage.js" defer></script>
+  <script src="js/main.js" defer></script>
+</body>
+</html>
