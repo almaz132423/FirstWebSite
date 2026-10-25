@@ -61,6 +61,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Атрибут hidden обязан скрывать элемент, даже если у него задан display */
+[hidden] {
+  display: none !important;
+}
+
 img {
   max-width: 100%;
   display: block;

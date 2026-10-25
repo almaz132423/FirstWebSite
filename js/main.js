@@ -93,6 +93,7 @@
     var mapLink = $('#contact-map');
     if (mapLink && c.mapUrl) {
       mapLink.hidden = false;
+      mapLink.style.display = '';
       mapLink.setAttribute('href', c.mapUrl);
     }
 
@@ -417,13 +418,19 @@
    * 6. Данные из Google Таблицы (если настроен api.url)
    * ------------------------------------------------------------------ */
 
+  function showHide(el, show) {
+    if (!el) return;
+    el.hidden = !show; // снимаем/ставим атрибут (CSS [hidden] имеет !important)
+    el.style.display = show ? '' : 'none'; // страховка от устаревшего кэша CSS
+  }
+
   function refreshMessengerButtons() {
     var wa = cfg.messengers.whatsapp || {};
     var tg = cfg.messengers.telegram || {};
     var mx = cfg.messengers.max || {};
-    $('#send-whatsapp').hidden = !(wa.enabled && String(wa.phone || '').replace(/\D/g, ''));
-    $('#send-telegram').hidden = !(tg.enabled !== false);
-    $('#send-max').hidden = !(mx.enabled && mx.linkTemplate);
+    showHide($('#send-whatsapp'), wa.enabled && String(wa.phone || '').replace(/\D/g, ''));
+    showHide($('#send-telegram'), tg.enabled !== false);
+    showHide($('#send-max'), mx.enabled && mx.linkTemplate);
   }
 
   function loadFromSheet() {

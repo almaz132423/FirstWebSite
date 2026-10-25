@@ -79,6 +79,7 @@
     // Повторный вход в этой вкладке не запрашиваем до закрытия вкладки
     if (sessionStorage.getItem(SESSION_KEY) === '1') {
       lock.hidden = true;
+      lock.remove(); // удаляем полностью: не зависит от кэшированного CSS
       return;
     }
 
@@ -89,6 +90,7 @@
       if (ok) {
         sessionStorage.setItem(SESSION_KEY, '1');
         lock.hidden = true;
+        lock.remove();
         toast('Вход выполнен');
       } else {
         $('#lock-error').textContent = 'Неверный пароль';
