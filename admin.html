@@ -144,8 +144,12 @@
                   MAX включён
                 </label>
                 <input type="text" id="set-max-template" data-setting="messengers.max.linkTemplate"
-                       placeholder="Официальная ссылка MAX с {text}" aria-label="Шаблон ссылки MAX" />
-                <span class="desc">Только официальный механизм. Плейсхолдер {text} заменится сообщением.</span>
+                       placeholder="https://max.ru/:share?text={text}" aria-label="Шаблон ссылки MAX" />
+                <span class="desc">Официальный диплинк :share из документации MAX
+                  (dev.max.ru/help/deeplinks). Можно оставить пустым — тогда используется
+                  шаблон по умолчанию https://max.ru/:share?text={text}. Плейсхолдер {text}
+                  сайт сам заменит текстом заявки. Поведение на десктопе/веб-версии
+                  проверяйте отдельно.</span>
               </div>
             </div>
           </fieldset>

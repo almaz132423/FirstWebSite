@@ -370,24 +370,38 @@
   }
 
   function telegramHref(text) {
-    // Официальный механизм Telegram для передачи подготовленного текста.
-    return 'https://t.me/share/url?url=&text=' + encodeURIComponent(text);
+    var m = cfg.messengers.telegram || {};
+    if (m.chatUrl) {
+      // Официальный deep link t.me/<username> — открывает чат компании.
+      // Готовый текст прямо в конкретный чат из браузера передать нельзя,
+      // поэтому текст заявки дополнительно копируется в буфер обмена.
+      return m.chatUrl;
+    }
+    // Запасной вариант — официальный t.me/share/url. Параметр url здесь
+    // обязателен: с пустым url Telegram редиректит на telegram.org.
+    return 'https://t.me/share/url?url=' +
+      encodeURIComponent(window.location.href) + '&text=' + encodeURIComponent(text);
   }
 
   function maxHref(text) {
     var m = cfg.messengers.max || {};
-    var tpl = m.linkTemplate || '';
-    if (!tpl) return '';
+    // Официальный диплинк из документации MAX — используется по умолчанию,
+    // если поле шаблона в админке оставлено пустым.
+    var tpl = m.linkTemplate || 'https://max.ru/:share?text={text}';
     return tpl.replace(/\{text\}/g, encodeURIComponent(text));
   }
 
-  function openMessenger(url, name) {
+  function openMessenger(url, name, note) {
     if (!url) {
       toast('Ссылка ' + name + ' не настроена. Скопируйте текст сообщения.', 'error');
       return;
     }
     window.open(url, '_blank', 'noopener');
-    $('#booking-note').hidden = false;
+    var noteEl = $('#booking-note');
+    noteEl.textContent = note ||
+      'Сообщение откроется в ' + name + ' — отправьте его сами. ' +
+      'Заявка не считается подтверждённой, пока компания не ответит.';
+    noteEl.hidden = false;
   }
 
   /* ------------------------------------------------------------------
@@ -430,7 +444,8 @@
     var mx = cfg.messengers.max || {};
     showHide($('#send-whatsapp'), wa.enabled && String(wa.phone || '').replace(/\D/g, ''));
     showHide($('#send-telegram'), tg.enabled !== false);
-    showHide($('#send-max'), mx.enabled && mx.linkTemplate);
+    // Шаблон MAX всегда есть (официальный по умолчанию) — нужна только галочка
+    showHide($('#send-max'), Boolean(mx.enabled));
   }
 
   function loadFromSheet() {
@@ -495,11 +510,44 @@
     });
     $('#send-telegram').addEventListener('click', function () {
       if (!validateAll()) return;
-      openMessenger(telegramHref(buildMessageText()), 'Telegram');
+      var text = buildMessageText();
+      var chatUrl = (cfg.messengers.telegram || {}).chatUrl || '';
+
+      // Telegram не передаёт готовый текст в конкретный чат из браузера,
+      // поэтому дублируем текст в буфер: пользователь вставляет и отправляет сам.
+      if (chatUrl) {
+        copyText(text).then(function (ok) {
+          toast(
+            ok
+              ? 'Текст заявки скопирован — вставьте его в чат Telegram'
+              : 'Вставьте текст заявки в чат Telegram вручную',
+            ok ? 'ok' : 'error'
+          );
+        });
+      }
+
+      var note = chatUrl
+        ? 'Текст заявки скопирован в буфер — вставьте его в открывшийся чат и отправьте. ' +
+          'Заявка не считается подтверждённой, пока компания не ответит.'
+        : 'Выберите чат в Telegram и отправьте сообщение. ' +
+          'Заявка не считается подтверждённой, пока компания не ответит.';
+      openMessenger(telegramHref(text), 'Telegram', note);
     });
     $('#send-max').addEventListener('click', function () {
       if (!validateAll()) return;
-      openMessenger(maxHref(buildMessageText()), 'MAX');
+      var text = buildMessageText();
+      // Страховка: если у посетителя нет приложения MAX, текст уже в буфере.
+      copyText(text).then(function (ok) {
+        toast(
+          ok
+            ? 'Текст заявки скопирован — можно вставить его в чат MAX вручную'
+            : 'Вставьте текст заявки в чат MAX вручную',
+          ok ? 'ok' : 'error'
+        );
+      });
+      openMessenger(maxHref(text), 'MAX',
+        'Откроется экран «Отправить в MAX» с текстом заявки — выберите чат компании и отправьте. ' +
+        'Текст также скопирован в буфер. Заявка не считается подтверждённой, пока компания не ответит.');
     });
     $('#send-copy').addEventListener('click', function () {
       if (!validateAll()) return;
