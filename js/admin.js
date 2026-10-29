@@ -18,6 +18,7 @@
   var escapeHtml = AppUI.escapeHtml;
   var toast = AppUI.toast;
   var newId = AppUI.newId;
+  var readImageFile = AppUI.readImageFile;
 
   var LOCK_KEY = 'business-site:admin-pass';
   var SESSION_KEY = 'business-site:admin-authed';
@@ -136,6 +137,7 @@
         el.value = value == null ? '' : String(value);
       }
     });
+    refreshImageFields();
   }
 
   function bindSettings() {
@@ -155,6 +157,91 @@
         markDirty();
       });
     });
+  }
+
+  /* ------------------------------------------------------------------
+   * 3a. Загрузка изображений (логотип, фото витрины, фото услуги)
+   *     Блок [data-image-field="<путь в конфиге>" | "service"]:
+   *     превью, загрузка файла с устройства (сжатие через canvas), ссылка.
+   * ------------------------------------------------------------------ */
+
+  var svcImage = '';            // значение фото в открытом окне услуги
+  var imageRefreshers = {};     // key -> функция обновления превью
+
+  function isDataUrl(v) {
+    return typeof v === 'string' && v.indexOf('data:') === 0;
+  }
+
+  function initImageFields() {
+    $$('[data-image-field]').forEach(function (box) {
+      var key = box.getAttribute('data-image-field');
+      var png = box.hasAttribute('data-png');
+      var preview = $('[data-preview]', box);
+      var urlInput = $('[data-url]', box);
+      var fileInput = $('[data-file]', box);
+
+      function get() {
+        return key === 'service' ? svcImage : (getByPath(cfg, key) || '');
+      }
+
+      function store(value) {
+        if (key === 'service') {
+          svcImage = value;
+        } else {
+          setByPath(cfg, key, value);
+          markDirty();
+        }
+      }
+
+      function renderPreview() {
+        var value = get();
+        preview.innerHTML = value
+          ? '<img alt="" src="' + escapeHtml(value) + '" />'
+          : '<span>нет</span>';
+      }
+
+      function refresh() {
+        var value = get();
+        renderPreview();
+        urlInput.value = isDataUrl(value) ? '' : value;
+        urlInput.placeholder = isDataUrl(value)
+          ? 'Загружен файл с устройства'
+          : '…или ссылка: https://… либо images/файл.jpg';
+      }
+
+      imageRefreshers[key] = refresh;
+
+      $('[data-pick]', box).addEventListener('click', function () { fileInput.click(); });
+
+      fileInput.addEventListener('change', function () {
+        var file = fileInput.files && fileInput.files[0];
+        fileInput.value = '';
+        if (!file) return;
+        readImageFile(file, { png: png, maxSize: key === 'branding.logo' ? 600 : 1400 })
+          .then(function (dataUrl) {
+            store(dataUrl);
+            refresh();
+            toast('Изображение загружено' + (key === 'service' ? '' : ' — нажмите «Сохранить»'));
+          })
+          .catch(function (err) { toast(err.message, 'error'); });
+      });
+
+      $('[data-clear]', box).addEventListener('click', function () {
+        store('');
+        refresh();
+      });
+
+      urlInput.addEventListener('input', function () {
+        store(urlInput.value.trim());
+        renderPreview();
+      });
+
+      refresh();
+    });
+  }
+
+  function refreshImageFields() {
+    Object.keys(imageRefreshers).forEach(function (k) { imageRefreshers[k](); });
   }
 
   /* ------------------------------------------------------------------
@@ -223,7 +310,8 @@
     $('#svc-desc').value = s.description || '';
     $('#svc-price').value = s.price || '';
     $('#svc-duration').value = s.duration || '';
-    $('#svc-image').value = s.image || '';
+    svcImage = s.image || '';
+    refreshImageFields();
     $('#svc-image-alt').value = s.imageAlt || '';
     $$('#service-form .field').forEach(function (f) {
       f.classList.remove('is-invalid');
@@ -258,7 +346,7 @@
       description: $('#svc-desc').value.trim(),
       price: $('#svc-price').value.trim(),
       duration: $('#svc-duration').value.trim(),
-      image: $('#svc-image').value.trim(),
+      image: svcImage,
       imageAlt: $('#svc-image-alt').value.trim()
     };
 
@@ -285,7 +373,10 @@
   }
 
   function doSave() {
-    BusinessStorage.save(cfg);
+    if (!BusinessStorage.save(cfg)) {
+      toast('Не хватило места в браузере — загрузите фото меньшего размера или вставьте ссылки вместо файлов', 'error');
+      return;
+    }
     dirty = false;
     $('#btn-save').textContent = 'Сохранить';
     $('#admin-subtitle').textContent = 'сохранено в этом браузере · ' +
@@ -338,6 +429,7 @@
     if (!window.confirm('Сбросить все данные к значениям по умолчанию?')) return;
     cfg = BusinessStorage.defaults();
     BusinessStorage.save(cfg);
+    svcImage = '';
     renderSettings();
     renderServices();
     dirty = false;
@@ -384,6 +476,7 @@
   function init() {
     wireLockScreen();
     wirePasswordChange();
+    initImageFields();
     renderSettings();
     renderServices();
     bindSettings();

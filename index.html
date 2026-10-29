@@ -12,6 +12,7 @@
   <meta property="og:description" data-seo="description" content="Описание компании и услуг." />
   <meta property="og:locale" content="ru_RU" />
 
+  <link rel="icon" id="site-favicon" href="data:," />
   <link rel="stylesheet" href="css/main.css" />
 </head>
 <body>
@@ -20,7 +21,8 @@
   <header class="header">
     <div class="container header__inner">
       <a class="logo" href="#top">
-        <span class="logo__mark" aria-hidden="true">★</span>
+        <span class="logo__mark" id="logo-mark" aria-hidden="true">★</span>
+        <img class="logo__img" id="logo-img" alt="" hidden />
         <span id="brand-name">Название компании</span>
       </a>
 
@@ -70,7 +72,8 @@
         </div>
 
         <div class="hero__visual">
-          <div class="hero__card">
+          <div class="hero__card" id="hero-card">
+            <img class="hero__photo" id="hero-photo" alt="" hidden />
             <div class="figure">
               <div class="big" id="hero-card-title">Запись<br />онлайн</div>
               <div class="small">Выберите услугу — мы подготовим сообщение, останется только отправить.</div>
@@ -82,7 +85,7 @@
           </div>
           <div class="hero__float hero__float--rating">
             <span class="icon" aria-hidden="true">✉️</span>
-            <span><span class="label">Связь</span><br /><span class="value">WhatsApp · Telegram</span></span>
+            <span><span class="label">Связь</span><br /><span class="value" id="hero-messengers">WhatsApp · Telegram</span></span>
           </div>
         </div>
       </div>
@@ -105,8 +108,9 @@
     <!-- ======================= О компании ======================= -->
     <section class="section" id="about">
       <div class="container about-grid">
-        <div class="about-media" id="about-media" role="img" aria-label="Фотография компании">
-          Здесь будет реальная фотография компании
+        <div class="about-media" id="about-media">
+          <img class="about-media__img" id="about-photo" alt="" hidden />
+          <span id="about-placeholder">Здесь будет реальная фотография компании</span>
         </div>
         <div class="about-content">
           <div class="section-head" style="margin-bottom: 26px">
@@ -150,12 +154,14 @@
           <div class="contact-card">
             <span class="icon" aria-hidden="true">💬</span>
             <h3>Мессенджеры</h3>
-            <p>Принимаем заявки в WhatsApp и Telegram — выберите удобный способ в форме записи.</p>
+            <p id="contact-messengers-text">Принимаем заявки в WhatsApp и Telegram — выберите удобный способ в форме записи.</p>
           </div>
         </div>
 
         <div class="messenger-row">
           <button class="btn btn--primary" type="button" data-booking>Оставить заявку</button>
+          <a class="btn btn--vk" id="contact-vk" href="#" target="_blank" rel="noopener" hidden>ВКонтакте</a>
+          <a class="btn btn--avito" id="contact-avito" href="#" target="_blank" rel="noopener" hidden>Авито</a>
           <a class="btn btn--ghost" id="contact-map" href="#" hidden>Открыть маршрут</a>
         </div>
       </div>
@@ -167,7 +173,7 @@
     <div class="container">
       <div class="footer__grid">
         <div>
-          <h4 id="footer-brand">Название компании</h4>
+          <h4 class="footer__brand"><img class="footer__logo" id="footer-logo" alt="" hidden /><span id="footer-brand">Название компании</span></h4>
           <ul>
             <li id="footer-phone">+7 000 000-00-00</li>
             <li id="footer-address">Адрес компании</li>
@@ -220,6 +226,8 @@
             <button class="btn btn--whatsapp" type="button" id="send-whatsapp" hidden>WhatsApp</button>
             <button class="btn btn--telegram" type="button" id="send-telegram" hidden>Telegram</button>
             <button class="btn btn--max" type="button" id="send-max" hidden>MAX</button>
+            <button class="btn btn--vk" type="button" id="send-vk" hidden>ВКонтакте</button>
+            <button class="btn btn--avito" type="button" id="send-avito" hidden>Авито</button>
             <button class="btn btn--ghost" type="button" id="send-copy">Скопировать текст</button>
           </div>
         </form>

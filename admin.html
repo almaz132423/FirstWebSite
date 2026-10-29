@@ -119,6 +119,64 @@
           </div>
 
           <fieldset class="fieldset">
+            <legend>Логотип и фото витрины</legend>
+            <div class="settings-grid">
+              <div class="field image-field" data-image-field="branding.logo" data-png="1">
+                <label>Логотип</label>
+                <div class="image-field__row">
+                  <div class="image-field__preview" data-preview><span>нет</span></div>
+                  <div class="image-field__controls">
+                    <input type="file" accept="image/*" data-file hidden />
+                    <button class="btn btn--ghost btn--sm" type="button" data-pick>Загрузить файл</button>
+                    <button class="btn btn--ghost btn--sm" type="button" data-clear>Убрать</button>
+                  </div>
+                </div>
+                <input type="text" data-url placeholder="…или ссылка: https://… либо images/файл.jpg" aria-label="Логотип — ссылка" />
+                <span class="desc">Показывается в шапке, футере и как значок вкладки. Лучше PNG/SVG с прозрачным фоном.</span>
+              </div>
+
+              <div class="field">
+                <label for="set-logo-alt">Alt-текст логотипа</label>
+                <input type="text" id="set-logo-alt" data-setting="branding.logoAlt" placeholder="По умолчанию — название компании" />
+              </div>
+
+              <div class="field image-field" data-image-field="branding.heroImage">
+                <label>Фото в главном блоке (hero)</label>
+                <div class="image-field__row">
+                  <div class="image-field__preview" data-preview><span>нет</span></div>
+                  <div class="image-field__controls">
+                    <input type="file" accept="image/*" data-file hidden />
+                    <button class="btn btn--ghost btn--sm" type="button" data-pick>Загрузить файл</button>
+                    <button class="btn btn--ghost btn--sm" type="button" data-clear>Убрать</button>
+                  </div>
+                </div>
+                <input type="text" data-url placeholder="…или ссылка: https://… либо images/файл.jpg" aria-label="Фото в главном блоке (hero) — ссылка" />
+                <span class="desc">Рекомендуется вертикальное или квадратное фото, от 800 px по короткой стороне.</span>
+              </div>
+
+              <div class="field image-field" data-image-field="branding.aboutImage">
+                <label>Фото в блоке «О компании»</label>
+                <div class="image-field__row">
+                  <div class="image-field__preview" data-preview><span>нет</span></div>
+                  <div class="image-field__controls">
+                    <input type="file" accept="image/*" data-file hidden />
+                    <button class="btn btn--ghost btn--sm" type="button" data-pick>Загрузить файл</button>
+                    <button class="btn btn--ghost btn--sm" type="button" data-clear>Убрать</button>
+                  </div>
+                </div>
+                <input type="text" data-url placeholder="…или ссылка: https://… либо images/файл.jpg" aria-label="Фото в блоке «О компании» — ссылка" />
+                <span class="desc">Реальное фото компании, команды или работ. Права на изображение — на вашей стороне.</span>
+              </div>
+
+              <p class="desc" style="grid-column:1/-1;margin:0">
+                Файлы с устройства сжимаются и хранятся в этом браузере (localStorage).
+                В Google Таблицу попадают только фото, добавленные <b>ссылкой</b> — загруженные
+                файлы остаются локально и при синхронизации не теряются.
+              </p>
+            </div>
+          </fieldset>
+
+          <fieldset class="fieldset">
             <legend>Мессенджеры</legend>
             <div class="settings-grid">
               <div class="field">
@@ -136,6 +194,30 @@
                 <input type="text" id="set-tg-chat" data-setting="messengers.telegram.chatUrl" />
                 <span class="desc">Ключ в таблице: messengers.telegram.url. Текст заявки передаётся
                   через официальный механизм t.me/share/url.</span>
+              </div>
+
+              <div class="field">
+                <label class="field--check">
+                  <input type="checkbox" id="set-vk-enabled" data-setting="messengers.vk.enabled" />
+                  ВКонтакте включён
+                </label>
+                <input type="text" id="set-vk-url" data-setting="messengers.vk.chatUrl"
+                       placeholder="https://vk.me/имя_сообщества" aria-label="Ссылка на сообщество ВКонтакте" />
+                <span class="desc">Сообщество или страница (vk.com/… или vk.me/…). Кнопка открывает диалог,
+                  а текст заявки копируется в буфер: ВК не принимает текст по ссылке.
+                  В сообществе должны быть включены сообщения. Ключ в таблице: messengers.vk.url</span>
+              </div>
+
+              <div class="field">
+                <label class="field--check">
+                  <input type="checkbox" id="set-avito-enabled" data-setting="messengers.avito.enabled" />
+                  Авито включён
+                </label>
+                <input type="text" id="set-avito-url" data-setting="messengers.avito.chatUrl"
+                       placeholder="https://www.avito.ru/user/…/profile" aria-label="Ссылка на профиль или объявление Авито" />
+                <span class="desc">Профиль продавца или объявление. Авито не принимает текст по ссылке:
+                  кнопка открывает профиль/объявление, текст заявки копируется в буфер,
+                  посетитель вставляет его в чат «Написать». Ключ в таблице: messengers.avito.url</span>
               </div>
 
               <div class="field">
@@ -256,15 +338,23 @@
             </div>
           </div>
 
-          <div class="settings-grid" style="grid-template-columns:1fr 1fr">
-            <div class="field">
-              <label for="svc-image">URL изображения</label>
-              <input type="text" id="svc-image" data-svc="image" placeholder="images/service.jpg" />
-            </div>
-            <div class="field">
-              <label for="svc-image-alt">Alt-текст изображения</label>
-              <input type="text" id="svc-image-alt" data-svc="imageAlt" />
-            </div>
+          <div class="field image-field" data-image-field="service">
+                <label>Фото услуги</label>
+                <div class="image-field__row">
+                  <div class="image-field__preview" data-preview><span>нет</span></div>
+                  <div class="image-field__controls">
+                    <input type="file" accept="image/*" data-file hidden />
+                    <button class="btn btn--ghost btn--sm" type="button" data-pick>Загрузить файл</button>
+                    <button class="btn btn--ghost btn--sm" type="button" data-clear>Убрать</button>
+                  </div>
+                </div>
+                <input type="text" data-url placeholder="…или ссылка: https://… либо images/файл.jpg" aria-label="Фото услуги — ссылка" />
+                <span class="desc">Загрузите файл или вставьте ссылку.</span>
+              </div>
+
+          <div class="field">
+            <label for="svc-image-alt">Alt-текст изображения</label>
+            <input type="text" id="svc-image-alt" data-svc="imageAlt" />
           </div>
         </form>
       </div>

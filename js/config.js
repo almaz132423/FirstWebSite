@@ -14,6 +14,11 @@
  *     contacts.address         -> contacts.address
  *     contacts.hours           -> contacts.hours
  *     messengers.telegram.url  -> messengers.telegram.chatUrl
+ *     messengers.vk.url        -> messengers.vk.chatUrl
+ *     messengers.avito.url     -> messengers.avito.chatUrl
+ *     branding.logo            -> branding.logo   (только URL, не data:)
+ *     branding.heroImage       -> branding.heroImage
+ *     branding.aboutImage      -> branding.aboutImage
  *
  *   Услуги (лист: type="service", колонки):
  *     id, name, description, price, duration, image, imageAlt
@@ -26,6 +31,15 @@ window.APP_CONFIG_DEFAULTS = {
   meta: {
     version: '1.0.0',
     updated: '2026-10-25'
+  },
+
+  // Брендинг: логотип и фото витрины. Значение — URL/путь (images/logo.png)
+  // либо data:-URL, который админка создаёт при загрузке файла с устройства.
+  branding: {
+    logo: '',        // логотип в шапке и футере (пусто — значок ★)
+    logoAlt: '',     // alt-текст логотипа (пусто — название компании)
+    heroImage: '',   // фото в главном блоке (hero)
+    aboutImage: ''   // фото в блоке «О компании»
   },
 
   business: {
@@ -62,6 +76,20 @@ window.APP_CONFIG_DEFAULTS = {
       // Telegram не позволяет передать готовый текст сразу в конкретный чат
       // из браузера. Если chatUrl пуст, используется официальный t.me/share/url.
       chatUrl: 'https://t.me/example'
+    },
+    vk: {
+      enabled: false,
+      // Сообщество или страница ВКонтакте: https://vk.com/club123 или https://vk.me/name.
+      // ВК не умеет подставлять текст в диалог по ссылке, поэтому кнопка открывает
+      // диалог с сообществом (vk.me/<адрес>), а текст заявки копируется в буфер.
+      chatUrl: ''
+    },
+    avito: {
+      enabled: false,
+      // Ссылка на профиль продавца или объявление на Авито (https://www.avito.ru/...).
+      // Авито не позволяет передать текст по ссылке: кнопка открывает профиль/объявление,
+      // а текст заявки копируется в буфер — посетитель вставляет его в чат «Написать».
+      chatUrl: ''
     },
     max: {
       enabled: false,

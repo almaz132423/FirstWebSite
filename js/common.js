@@ -87,5 +87,57 @@ window.AppUI = (function () {
     return prefix + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
   }
 
-  return { $, $$, escapeHtml, toast, copyText, prefersReducedMotion, newId };
+  /**
+   * Чтение изображения с устройства и сжатие через canvas.
+   * Нужно, чтобы фото с телефона (5–10 МБ) не переполнило localStorage.
+   *   options.maxSize  — максимальная сторона в px (по умолчанию 1400)
+   *   options.png      — true: сохранить прозрачность (для логотипа), иначе JPEG
+   * Возвращает Promise<string> с data:-URL.
+   */
+  function readImageFile(file, options) {
+    options = options || {};
+    var maxSize = options.maxSize || 1400;
+    return new Promise(function (resolve, reject) {
+      if (!file || !/^image\//.test(file.type)) {
+        reject(new Error('Выберите файл изображения (JPG, PNG, WebP, SVG)'));
+        return;
+      }
+      var reader = new FileReader();
+      reader.onerror = function () { reject(new Error('Не удалось прочитать файл')); };
+      reader.onload = function () {
+        // SVG векторный — сжимать не нужно, но ограничим размер
+        if (file.type === 'image/svg+xml') {
+          if (reader.result.length > 200000) {
+            reject(new Error('SVG слишком большой (больше ~150 КБ)'));
+          } else {
+            resolve(reader.result);
+          }
+          return;
+        }
+        var img = new Image();
+        img.onerror = function () { reject(new Error('Не удалось открыть изображение')); };
+        img.onload = function () {
+          var ratio = Math.min(1, maxSize / Math.max(img.width, img.height));
+          var w = Math.max(1, Math.round(img.width * ratio));
+          var h = Math.max(1, Math.round(img.height * ratio));
+          var canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          var ctx = canvas.getContext('2d');
+          if (!options.png) {
+            ctx.fillStyle = '#ffffff'; // под JPEG нет прозрачности
+            ctx.fillRect(0, 0, w, h);
+          }
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(options.png
+            ? canvas.toDataURL('image/png')
+            : canvas.toDataURL('image/jpeg', 0.82));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  return { $, $$, escapeHtml, toast, copyText, prefersReducedMotion, newId, readImageFile };
 })();

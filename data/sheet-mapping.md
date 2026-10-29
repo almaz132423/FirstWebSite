@@ -33,6 +33,11 @@ https://docs.google.com/spreadsheets/d/11X-a1AUTlxjV5ZgwIR5PXFiyhsXRgELHqZUlDaSz
 | settings: contacts.address | `contacts.address` |
 | settings: contacts.hours | `contacts.hours` |
 | settings: messengers.telegram.url | `messengers.telegram.chatUrl` |
+| settings: messengers.vk.url | `messengers.vk.chatUrl` |
+| settings: messengers.avito.url | `messengers.avito.chatUrl` |
+| settings: branding.logo | `branding.logo` (только ссылка, не data:) |
+| settings: branding.heroImage | `branding.heroImage` (только ссылка) |
+| settings: branding.aboutImage | `branding.aboutImage` (только ссылка) |
 | service: id | `services[].id` |
 | service: name | `services[].name` |
 | service: description | `services[].description` |

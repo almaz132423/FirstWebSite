@@ -60,6 +60,71 @@
     if (el && value) el.textContent = value;
   }
 
+  /** Логотип, фото витрины и favicon из раздела branding. */
+  function renderBranding() {
+    var br = cfg.branding || {};
+    var name = (cfg.business && cfg.business.name) || '';
+
+    var logoImg = $('#logo-img');
+    var logoMark = $('#logo-mark');
+    if (logoImg && logoMark) {
+      var hasLogo = Boolean(br.logo);
+      if (hasLogo) {
+        logoImg.src = br.logo;
+        logoImg.alt = br.logoAlt || name;
+      }
+      logoImg.hidden = !hasLogo;
+      logoMark.hidden = hasLogo;
+      logoMark.style.display = hasLogo ? 'none' : '';
+    }
+
+    var footerLogo = $('#footer-logo');
+    if (footerLogo) {
+      if (br.logo) {
+        footerLogo.src = br.logo;
+        footerLogo.alt = br.logoAlt || name;
+      }
+      footerLogo.hidden = !br.logo;
+    }
+
+    var favicon = $('#site-favicon');
+    if (favicon && br.logo) favicon.setAttribute('href', br.logo);
+
+    var heroPhoto = $('#hero-photo');
+    var heroCard = $('#hero-card');
+    if (heroPhoto && heroCard) {
+      if (br.heroImage) {
+        heroPhoto.src = br.heroImage;
+        heroPhoto.alt = name;
+      }
+      heroPhoto.hidden = !br.heroImage;
+      heroCard.classList.toggle('has-photo', Boolean(br.heroImage));
+    }
+
+    var aboutPhoto = $('#about-photo');
+    var aboutPlaceholder = $('#about-placeholder');
+    if (aboutPhoto) {
+      if (br.aboutImage) {
+        aboutPhoto.src = br.aboutImage;
+        aboutPhoto.alt = name;
+      }
+      aboutPhoto.hidden = !br.aboutImage;
+      if (aboutPlaceholder) aboutPlaceholder.hidden = Boolean(br.aboutImage);
+    }
+  }
+
+  /** Названия включённых мессенджеров — для подписей на витрине. */
+  function enabledMessengerNames() {
+    var m = cfg.messengers || {};
+    var names = [];
+    if (m.whatsapp && m.whatsapp.enabled) names.push('WhatsApp');
+    if (!m.telegram || m.telegram.enabled !== false) names.push('Telegram');
+    if (m.max && m.max.enabled) names.push('MAX');
+    if (m.vk && m.vk.enabled) names.push('ВКонтакте');
+    if (m.avito && m.avito.enabled) names.push('Авито');
+    return names;
+  }
+
   function renderStatic() {
     var b = cfg.business || {};
     var c = cfg.contacts || {};
@@ -88,6 +153,29 @@
     setText('#footer-hours', c.hours);
     setText('#footer-brand', b.name);
     setText('#footer-copy', '© ' + new Date().getFullYear() + ' ' + (b.name || ''));
+
+    var names = enabledMessengerNames();
+    if (names.length) {
+      setText('#hero-messengers', names.join(' · '));
+      setText('#contact-messengers-text',
+        'Принимаем заявки: ' + names.join(', ') + ' — выберите удобный способ в форме записи.');
+    }
+
+    // Прямые ссылки на ВКонтакте и Авито в блоке контактов (без текста заявки)
+    var vkCfg = (cfg.messengers && cfg.messengers.vk) || {};
+    var avCfg = (cfg.messengers && cfg.messengers.avito) || {};
+    var vkLink = $('#contact-vk');
+    if (vkLink) {
+      var vkOn = Boolean(vkCfg.enabled && vkCfg.chatUrl);
+      showHide(vkLink, vkOn);
+      if (vkOn) vkLink.setAttribute('href', vkHref());
+    }
+    var avLink = $('#contact-avito');
+    if (avLink) {
+      var avOn = Boolean(avCfg.enabled && avCfg.chatUrl);
+      showHide(avLink, avOn);
+      if (avOn) avLink.setAttribute('href', avCfg.chatUrl);
+    }
 
     // Маршрут — показываем только если адрес задан в конфигурации
     var mapLink = $('#contact-map');
@@ -383,6 +471,26 @@
       encodeURIComponent(window.location.href) + '&text=' + encodeURIComponent(text);
   }
 
+  /**
+   * VK: диалог с сообществом/страницей открывается по ссылке vk.me/<адрес>.
+   * Адрес вида vk.com/<адрес> приводится к vk.me/<адрес>. Готовый текст ВК
+   * по ссылке не принимает, поэтому он копируется в буфер обмена.
+   */
+  function vkHref() {
+    var url = String((cfg.messengers.vk || {}).chatUrl || '').trim();
+    if (!url) return '';
+    var match = url.match(/^https?:\/\/(?:m\.)?(?:vk\.com|vk\.ru)\/([A-Za-z0-9_.]+)\/?$/);
+    if (match && ['im', 'feed', 'away', 'share'].indexOf(match[1]) === -1) {
+      return 'https://vk.me/' + match[1];
+    }
+    return url;
+  }
+
+  /** Авито: открывается профиль продавца/объявление, текст копируется в буфер. */
+  function avitoHref() {
+    return String((cfg.messengers.avito || {}).chatUrl || '').trim();
+  }
+
   function maxHref(text) {
     var m = cfg.messengers.max || {};
     // Официальный диплинк из документации MAX — используется по умолчанию,
@@ -446,6 +554,10 @@
     showHide($('#send-telegram'), tg.enabled !== false);
     // Шаблон MAX всегда есть (официальный по умолчанию) — нужна только галочка
     showHide($('#send-max'), Boolean(mx.enabled));
+    var vk = cfg.messengers.vk || {};
+    var av = cfg.messengers.avito || {};
+    showHide($('#send-vk'), Boolean(vk.enabled && vk.chatUrl));
+    showHide($('#send-avito'), Boolean(av.enabled && av.chatUrl));
   }
 
   function loadFromSheet() {
@@ -455,6 +567,7 @@
       .then(function (model) {
         cfg = BusinessStorage.applySheetModel(cfg, model);
         BusinessStorage.save(cfg); // кэш, чтобы сайт работал без сети
+        renderBranding();
         renderStatic();
         renderServices();
         refreshMessengerButtons();
@@ -549,6 +662,29 @@
         'Откроется экран «Отправить в MAX» с текстом заявки — выберите чат компании и отправьте. ' +
         'Текст также скопирован в буфер. Заявка не считается подтверждённой, пока компания не ответит.');
     });
+    // ВКонтакте и Авито: текст по ссылке передать нельзя — копируем в буфер
+    // и открываем диалог/профиль, посетитель вставляет текст и отправляет сам.
+    function sendViaCopy(url, name) {
+      if (!validateAll()) return;
+      var text = buildMessageText();
+      copyText(text).then(function (ok) {
+        toast(
+          ok
+            ? 'Текст заявки скопирован — вставьте его в чат ' + name
+            : 'Вставьте текст заявки в чат ' + name + ' вручную',
+          ok ? 'ok' : 'error'
+        );
+      });
+      openMessenger(url, name,
+        'Текст заявки скопирован в буфер — вставьте его в открывшийся чат ' + name +
+        ' и отправьте. Заявка не считается подтверждённой, пока компания не ответит.');
+    }
+    $('#send-vk').addEventListener('click', function () {
+      sendViaCopy(vkHref(), 'ВКонтакте');
+    });
+    $('#send-avito').addEventListener('click', function () {
+      sendViaCopy(avitoHref(), 'Авито');
+    });
     $('#send-copy').addEventListener('click', function () {
       if (!validateAll()) return;
       copyText(buildMessageText()).then(function (ok) {
@@ -581,6 +717,7 @@
   function init() {
     applyDesign();
     applySeo();
+    renderBranding();
     renderStatic();
     renderServices();
     wireEvents();
